@@ -1,0 +1,11 @@
+import graphene
+
+class Query(graphene.ObjectType):
+    hello = graphene.String(default_value="Hello World")
+
+schema = graphene.Schema(query=Query)
+
+@app.route("/graphql", methods=["POST"])
+def graphql_server():
+    # Configuração da API GraphQL
+    pass
