@@ -1,0 +1,22 @@
+from flask import Flask, jsonify
+from schema import schema
+from graphql_server.flask import GraphQLView
+
+app = Flask(__name__)
+
+# Configuração da rota GraphQL
+app.add_url_rule(
+    "/graphql",
+    view_func=GraphQLView.as_view(
+        "graphql",
+        schema=schema,
+        graphiql=True  # Habilita a interface GraphiQL para explorar a API
+    ),
+)
+
+@app.route("/")
+def home():
+    return jsonify({"message": "Bem-vindo à API GraphQL!"})
+
+if __name__ == "__main__":
+    app.run(debug=True)
