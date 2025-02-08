@@ -1,8 +1,22 @@
 from flask import Flask, jsonify
 from schema import schema
 from graphql_server.flask import GraphQLView
+import logging
+from flask_cors import CORS
+
+class Config:
+    DEBUG = True
+    SECRET_KEY = 'sua_chave_secreta_aqui'
 
 app = Flask(__name__)
+app.config.from_object(Config)
+
+# Habilitar CORS para todas as rotas
+CORS(app)
+
+# Configuração do logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Configuração da rota GraphQL
 app.add_url_rule(
@@ -16,7 +30,28 @@ app.add_url_rule(
 
 @app.route("/")
 def home():
+    """
+    Rota inicial da API.
+    Retorna uma mensagem de boas-vindas.
+    """
     return jsonify({"message": "Bem-vindo à API GraphQL!"})
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """
+    Manipulador de erros global.
+    Captura exceções e retorna uma resposta JSON consistente.
+    """
+    logger.error(f"Erro inesperado: {e}", exc_info=True)
+    return jsonify({"error": "Ocorreu um erro interno no servidor"}), 500
+
+# Adicionar headers de segurança
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
