@@ -1,12 +1,20 @@
-class User:
-    def __init__(self, id, name, email):
-        self.id = id
-        self.name = name
-        self.email = email
+from dataclasses import dataclass
 
+@dataclass
+class User:
+    id: int
+    name: str
+    email: str
+
+    def __repr__(self):
+        return f"User(id={self.id}, name='{self.name}', email='{self.email}')"
+
+@dataclass
 class Task:
-    def __init__(self, id, title, description, user_id):
-        self.id = id
-        self.title = title
-        self.description = description
-        self.user_id = user_id
+    id: int
+    title: str
+    description: str
+    user_id: int
+
+    def __repr__(self):
+        return f"Task(id={self.id}, title='{self.title}', description='{self.description}', user_id={self.user_id})"
