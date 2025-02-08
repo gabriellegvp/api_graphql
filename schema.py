@@ -4,19 +4,19 @@ from data import users, tasks
 from models import User, Task
 
 # Tipos GraphQL
-class UserType(graphene.ObjectType):
+class UserType(ObjectType):
     id = Int()
     name = String()
     email = String()
 
-class TaskType(graphene.ObjectType):
+class TaskType(ObjectType):
     id = Int()
     title = String()
     description = String()
     user = Field(UserType)
 
     def resolve_user(self, info):
-        return next((user for user in users if user.id == self.user_id), None)
+        return next((user for user in users if user.id == self.user.id), None)
 
 # Consultas
 class Query(ObjectType):
@@ -46,7 +46,11 @@ class CreateUser(Mutation):
     user = Field(UserType)
 
     def mutate(self, info, name, email):
-        new_user = User(id=len(users) + 1, name=name, email=email)
+        if not name.strip() or not email.strip():
+            raise Exception("Nome e e-mail não podem estar vazios!")
+
+        new_id = max([u.id for u in users], default=0) + 1
+        new_user = User(id=new_id, name=name, email=email)
         users.append(new_user)
         return CreateUser(user=new_user)
 
@@ -59,11 +63,15 @@ class CreateTask(Mutation):
     task = Field(TaskType)
 
     def mutate(self, info, title, description, user_id):
-        # Verifica se o usuário existe
-        if not any(user.id == user_id for user in users):
+        if not title.strip() or not description.strip():
+            raise Exception("Título e descrição não podem estar vazios!")
+
+        user = next((user for user in users if user.id == user_id), None)
+        if not user:
             raise Exception("Usuário não encontrado!")
 
-        new_task = Task(id=len(tasks) + 1, title=title, description=description, user_id=user_id)
+        new_id = max([t.id for t in tasks], default=0) + 1
+        new_task = Task(id=new_id, title=title, description=description, user=user)
         tasks.append(new_task)
         return CreateTask(task=new_task)
 
